@@ -83,13 +83,19 @@ export default function Signup() {
     setIsLoading(true);
 
     // Validation
-    if (!formData.fullName || !formData.email || !formData.password || !formData.dueDate) {
+    if (!formData.fullName || !formData.email || !formData.password) {
       setError('Please fill in all fields');
       setIsLoading(false);
       return;
     }
 
-    // For new parents, require baby date of birth
+    // Require date based on user type
+    if (formData.userType === 'pregnant' && !formData.dueDate) {
+      setError('Please enter your due date');
+      setIsLoading(false);
+      return;
+    }
+
     if (formData.userType === 'newParent' && !formData.babyDateOfBirth) {
       setError('Please enter baby\'s date of birth');
       setIsLoading(false);
@@ -123,8 +129,8 @@ export default function Signup() {
         email: formData.email,
         password: formData.password,
         userType: formData.userType,
-        dueDate: formData.dueDate,
-        babyDateOfBirth: formData.babyDateOfBirth,
+        dueDate: formData.userType === 'pregnant' ? formData.dueDate : '',
+        babyDateOfBirth: formData.userType === 'newParent' ? formData.babyDateOfBirth : '',
       });
 
       navigate('/login', { state: { message: 'Account created! Please sign in.' } });
@@ -191,17 +197,16 @@ export default function Signup() {
             onUserTypeChange={handleUserTypeChange}
           />
 
-          {/* Due Date / Baby Date Input with Calendar Picker */}
-          <DateInput
-            label={formData.userType === 'pregnant' ? 'Due Date' : 'Baby Date of Birth'}
-            id="dueDate"
-            name="dueDate"
-            value={formData.dueDate}
-            onChange={handleInputChange}
-          />
-
-          {/* Baby Date of Birth for New Parents */}
-          {formData.userType === 'newParent' && (
+          {/* Single date field based on user type */}
+          {formData.userType === 'pregnant' ? (
+            <DateInput
+              label="Due Date"
+              id="dueDate"
+              name="dueDate"
+              value={formData.dueDate}
+              onChange={handleInputChange}
+            />
+          ) : (
             <DateInput
               label="Baby's Date of Birth"
               id="babyDateOfBirth"

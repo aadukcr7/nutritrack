@@ -16,12 +16,7 @@ const stageOptions = [
     description: 'Track milestones, reminders, and prenatal care.',
     icon: '🤰'
   },
-  {
-    key: 'trying',
-    title: "I'm Trying To Conceive",
-    description: 'Plan your journey with tailored tips and reminders.',
-    icon: '🌱'
-  },
+  
   {
     key: 'newParent',
     title: "I'm a New Parent",
