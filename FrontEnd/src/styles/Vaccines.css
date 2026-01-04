@@ -1,17 +1,18 @@
-/* Vaccines Page Styling - NutriTrack App */
+/* Vaccines Page Styling - Dark Theme */
 /* ===== CSS VARIABLES ===== */
 :root {
-  --vaccine-blue: #2196f3;
-  --light-vaccine-blue: #e3f2fd;
-  --dark-vaccine-blue: #1565c0;
-  --text-dark: #333333;
-  --text-gray: #666666;
-  --border-gray: #e0e0e0;
+  --bg-dark: #0f172a;
+  --card-dark: #1c1b21;
+  --card-muted: #22212a;
+  --text-main: #e2e8f0;
+  --text-muted: #9ba4b5;
+  --border: #2b2c37;
+  --vaccine-blue: #38bdf8;
+  --light-vaccine-blue: rgba(56, 189, 248, 0.15);
   --white: #ffffff;
-  --light-gray: #f8f9fa;
-  --success-green: #27ae60;
-  --warning-orange: #ff9800;
-  --upcoming-red: #f44336;
+  --success-green: #22c55e;
+  --warning-orange: #f97316;
+  --upcoming-red: #ef4444;
 }
 
 /* ===== VACCINES CONTAINER ===== */
@@ -19,7 +20,9 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  background: radial-gradient(circle at 20% 20%, rgba(192, 132, 252, 0.12), transparent 30%),
+    radial-gradient(circle at 80% 0%, rgba(123, 224, 214, 0.12), transparent 30%),
+    var(--bg-dark);
   padding-bottom: 80px;
   overflow-y: auto;
 }
@@ -38,13 +41,13 @@
 
 /* ===== VACCINES HEADER ===== */
 .vaccines-header {
-  background: linear-gradient(135deg, #2196f3 0%, #1565c0 100%);
+  background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
   color: var(--white);
   padding: 30px 20px;
   display: flex;
   align-items: center;
   gap: 20px;
-  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
 }
 
 .vaccines-header-back {
@@ -94,11 +97,12 @@
 }
 
 .vaccine-stat-card {
-  background: var(--white);
+  background: var(--card-dark);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 16px;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .vaccine-stat-number {
@@ -138,22 +142,23 @@
 
 .vaccine-tab-btn {
   padding: 10px 16px;
-  border: none;
+  border: 1px solid var(--border);
   border-radius: 12px;
-  background: var(--white);
-  color: var(--text-dark);
+  background: var(--card-dark);
+  color: var(--text-muted);
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: none;
 }
 
 .vaccine-tab-btn.active {
   background: var(--vaccine-blue);
-  color: var(--white);
-  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+  color: #0f172a;
+  border-color: var(--vaccine-blue);
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
 }
 
 .vaccine-tab-btn:hover {
@@ -162,27 +167,29 @@
 
 /* ===== VACCINE CARD ===== */
 .vaccine-card {
-  background: var(--white);
+  background: var(--card-dark);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
 }
 
 .vaccine-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.1);
+  border-color: var(--vaccine-blue);
+  box-shadow: 0 6px 16px rgba(56, 189, 248, 0.15);
 }
 
 /* URGENT VACCINE CARD - Due within 7 days */
 .vaccine-card.urgent {
   border-left: 4px solid var(--warning-orange);
-  background: linear-gradient(90deg, rgba(255, 152, 0, 0.02) 0%, var(--white) 100%);
-  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.15);
+  background: linear-gradient(90deg, rgba(249, 115, 22, 0.12) 0%, var(--card-dark) 100%);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
 }
 
 .vaccine-card.urgent:hover {
-  box-shadow: 0 4px 16px rgba(255, 152, 0, 0.2);
+  box-shadow: 0 6px 16px rgba(249, 115, 22, 0.25);
 }
 
 .vaccine-card-header {

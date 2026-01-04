@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.local
+*.sqlite
+*.sqlite3
+db.sqlite
+db.sqlite3
+.DS_Store
+*.log
+npm-debug.log
+yarn-error.log
+dist/
+build/

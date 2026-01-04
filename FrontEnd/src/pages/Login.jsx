@@ -31,6 +31,14 @@ export default function Login() {
   });
   const navigate = useNavigate();
 
+  // ===== CLEAR FIELDS ON FOCUS =====
+  const handleFieldFocus = (fieldName) => {
+    // Clear the field when user focuses on it
+    handleInputChange({
+      target: { name: fieldName, value: '' }
+    });
+  };
+
   // ===== FORM SUBMISSION HANDLER =====
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -53,7 +61,6 @@ export default function Login() {
     try {
       const result = await login({ email: formData.email, password: formData.password });
       setAuthToken(result.access_token);
-      localStorage.setItem('user', JSON.stringify({ email: formData.email }));
       navigate('/home');
       setIsLoading(false);
     } catch (err) {
@@ -82,9 +89,10 @@ export default function Login() {
             id="email"
             type="email"
             name="email"
-            placeholder="Enter your email"
+            placeholder="example: user@email.com"
             value={formData.email}
             onChange={handleInputChange}
+            onFocus={() => handleFieldFocus('email')}
           />
 
           {/* Password Input */}
@@ -93,9 +101,10 @@ export default function Login() {
             id="password"
             type="password"
             name="password"
-            placeholder="Enter your password"
+            placeholder="example: Password@123"
             value={formData.password}
             onChange={handleInputChange}
+            onFocus={() => handleFieldFocus('password')}
           />
 
           {/* Error Display */}

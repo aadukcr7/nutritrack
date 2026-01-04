@@ -7,6 +7,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import GreetingCard from '../components/GreetingCard';
 import ReminderCard from '../components/ReminderCard';
 import NotificationCard from '../components/NotificationCard';
@@ -14,24 +15,23 @@ import NotificationBanner from '../components/NotificationBanner';
 import TipCard from '../components/TipCard';
 import BottomNavigation from '../components/BottomNavigation';
 import NotificationService from '../services/NotificationService';
-import { getReminders, getDailyTip } from '../api';
+import { getReminders, getDailyTip, getCurrentUser, getAuthToken } from '../api';
 import '../styles/Home.css';
 import '../styles/NotificationCard.css';
 
 export default function Home() {
+  const navigate = useNavigate();
   // State for notification permission
   const [notificationPermission, setNotificationPermission] = useState(false);
   const [tip, setTip] = useState("Stay hydrated! Drink at least 8 glasses of water daily.");
   const [tipError, setTipError] = useState(null);
   const [reminders, setReminders] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Sample data - would come from props or API in production
-  const userData = {
-    userName: "Sarah Johnson",
-    trimester: "Trimester 2",
-    dueDate: "2025-06-15"
-  };
+  const [userData, setUserData] = useState({
+    userName: "Loading...",
+    trimester: "Calculating...",
+    dueDate: null
+  });
 
   // Vaccine data for notification checking
   const vaccinesData = [
@@ -119,6 +119,54 @@ export default function Home() {
     };
 
     const fetchData = async () => {
+      try {
+        // Check if user is logged in
+        const token = getAuthToken();
+        if (!token) {
+          console.log('No authentication token found');
+          setUserData({
+            userName: "Guest",
+            trimester: "Unknown",
+            dueDate: null
+          });
+          setLoading(false);
+          return;
+        }
+
+        // Fetch current user from backend
+        const user = await getCurrentUser();
+        console.log('User data fetched:', user);
+        
+        // Calculate trimester based on due date
+        let trimester = "Calculating...";
+        if (user.due_date) {
+          const now = new Date();
+          const dueDate = new Date(user.due_date);
+          const weeksPregnant = Math.floor((now - new Date(now.getFullYear() - 0.75, 0, 1)) / (7 * 24 * 60 * 60 * 1000));
+          
+          if (weeksPregnant < 13) {
+            trimester = "Trimester 1";
+          } else if (weeksPregnant < 26) {
+            trimester = "Trimester 2";
+          } else {
+            trimester = "Trimester 3";
+          }
+        }
+        
+        setUserData({
+          userName: user.full_name || "User",
+          trimester: trimester,
+          dueDate: user.due_date
+        });
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        setUserData({
+          userName: "Guest",
+          trimester: "Unknown",
+          dueDate: null
+        });
+      }
+
       try {
         // Fetch reminders from backend
         const remindersData = await getReminders();

@@ -30,27 +30,32 @@ async function request(path, options = {}) {
 }
 
 export async function login({ email, password }) {
-  const body = new URLSearchParams({
-    username: email,
-    password,
-  });
-
-  const data = await request('/auth/login', {
+  const data = await request('/api/auth/login', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/json',
     },
-    body,
+    body: JSON.stringify({
+      email,
+      password,
+    }),
   });
 
   return data; // { access_token, token_type }
 }
 
-export async function register({ fullName, email, dueDate, userType, password }) {
+export async function getCurrentUser() {
+  return request('/api/auth/me', {
+    method: 'GET',
+  });
+}
+
+export async function register({ fullName, email, dueDate, userType, password, babyDateOfBirth }) {
   // Backend expects due_date as datetime string; send start of day if provided
   const dueDateIso = dueDate ? `${dueDate}T00:00:00` : null;
+  const babyDobIso = babyDateOfBirth ? `${babyDateOfBirth}T00:00:00` : null;
 
-  return request('/auth/register', {
+  return request('/api/auth/register', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -61,38 +66,39 @@ export async function register({ fullName, email, dueDate, userType, password })
       full_name: fullName,
       due_date: dueDateIso,
       user_type: userType,
+      baby_date_of_birth: babyDobIso,
     }),
   });
 }
 
 // ===== Static Data Endpoints =====
 export async function getDailyTip() {
-  return request('/static/daily-tip');
+  return request('/api/static/daily-tip');
 }
 
 export async function getNutritionTips() {
-  return request('/static/nutrition-tips');
+  return request('/api/static/nutrition-tips');
 }
 
 export async function getVaccineSchedule() {
-  return request('/static/vaccine-schedule');
+  return request('/api/static/vaccine-schedule');
 }
 
 export async function getFeedingGuide() {
-  return request('/static/feeding-guide');
+  return request('/api/static/feeding-guide');
 }
 
 export async function getSafeFoods() {
-  return request('/static/safe-foods');
+  return request('/api/static/safe-foods');
 }
 
 // ===== Growth Records =====
 export async function getGrowthRecords() {
-  return request('/growth/records');
+  return request('/api/growth/records');
 }
 
 export async function createGrowthRecord(recordData) {
-  return request('/growth/records', {
+  return request('/api/growth/records', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -102,18 +108,18 @@ export async function createGrowthRecord(recordData) {
 }
 
 export async function deleteGrowthRecord(recordId) {
-  return request(`/growth/records/${recordId}`, {
+  return request(`/api/growth/records/${recordId}`, {
     method: 'DELETE',
   });
 }
 
 // ===== Reminders =====
 export async function getReminders() {
-  return request('/reminders/');
+  return request('/api/reminders/');
 }
 
 export async function createReminder(reminderData) {
-  return request('/reminders/', {
+  return request('/api/reminders/', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -123,13 +129,13 @@ export async function createReminder(reminderData) {
 }
 
 export async function completeReminder(reminderId) {
-  return request(`/reminders/${reminderId}/complete`, {
+  return request(`/api/reminders/${reminderId}/complete`, {
     method: 'PATCH',
   });
 }
 
 export async function deleteReminder(reminderId) {
-  return request(`/reminders/${reminderId}`, {
+  return request(`/api/reminders/${reminderId}`, {
     method: 'DELETE',
   });
 }

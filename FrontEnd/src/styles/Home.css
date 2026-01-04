@@ -1,31 +1,31 @@
-/* Home Page Styling - NutriTrack App */
+/* Home Page Styling - Dark Theme */
 /* ===== CSS VARIABLES ===== */
 :root {
-  --primary-pink: #ff1493;
-  --primary-purple: #8b3a8b;
-  --light-pink: #ff69b4;
-  --dark-purple: #6b2d6b;
-  --light-purple: #f0e6f0;
-  --text-dark: #333333;
-  --text-gray: #666666;
-  --border-gray: #e0e0e0;
+  --bg-dark: #0f172a;
+  --card-dark: #1c1b21;
+  --card-muted: #22212a;
+  --text-main: #e2e8f0;
+  --text-muted: #9ba4b5;
+  --border: #2b2c37;
+  --border-strong: #3b3d4a;
+  --accent: #7be0d6;
+  --accent-2: #c084fc;
+  --success-green: #22c55e;
+  --warning-yellow: #eab308;
+  --light-green: #86efac;
+  --light-blue: #38bdf8;
   --white: #ffffff;
-  --light-gray: #f8f9fa;
-  --success-green: #27ae60;
-  --warning-yellow: #fff3cd;
-  --light-green: #e8f5e9;
-  --light-blue: #e3f2fd;
-  --light-pink-bg: #fce4ec;
-  --light-purple-bg: #f3e5f5;
 }
 
 /* ===== HOME CONTAINER ===== */
 .home-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  background: linear-gradient(135deg, #fff5f9 0%, #f0e6f0 100%);
-  padding-bottom: 80px; /* Space for bottom navigation */
+  min-height: 100vh;
+  background: radial-gradient(circle at 20% 20%, rgba(192, 132, 252, 0.12), transparent 30%),
+    radial-gradient(circle at 80% 0%, rgba(123, 224, 214, 0.12), transparent 30%),
+    var(--bg-dark);
+  padding-bottom: 80px;
   overflow-y: auto;
 }
 
@@ -43,11 +43,11 @@
 
 /* ===== GREETING CARD ===== */
 .greeting-card {
-  background: linear-gradient(135deg, #ff1493 0%, #8b3a8b 100%);
+  background: linear-gradient(135deg, var(--accent-2), var(--accent));
   border-radius: 20px;
   padding: 25px;
   color: var(--white);
-  box-shadow: 0 8px 24px rgba(255, 20, 147, 0.2);
+  box-shadow: 0 8px 24px rgba(123, 224, 214, 0.25);
 }
 
 .greeting-header {
@@ -159,7 +159,7 @@
 .section-header h2 {
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-dark);
+  color: var(--text-main);
   margin: 0;
 }
 
@@ -181,13 +181,14 @@
 }
 
 .reminder-item {
-  background: var(--white);
+  background: var(--card-dark);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 15px;
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
 }
 
@@ -341,6 +342,8 @@
   color: #999999;
   transition: all 0.3s ease;
   flex: 1;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .nav-item.active {
@@ -349,16 +352,31 @@
 
 .nav-icon {
   font-size: 20px;
+  display: block;
 }
 
 .nav-label {
   font-size: 11px;
   font-weight: 500;
   text-align: center;
+  display: block;
+  white-space: nowrap;
 }
 
 .nav-item:hover {
   background: var(--light-gray);
+}
+
+.nav-item:active,
+.nav-item:focus {
+  outline: none;
+}
+
+.nav-item:active .nav-label,
+.nav-item:focus .nav-label {
+  display: block;
+  visibility: visible;
+  opacity: 1;
 }
 
 /* ===== SCROLLBAR STYLING ===== */

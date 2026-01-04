@@ -1,14 +1,15 @@
-/* Nutrition Page Styling - NutriTrack App */
+/* Nutrition Page Styling - Dark Theme */
 /* ===== CSS VARIABLES ===== */
 :root {
-  --nutrition-green: #00c853;
-  --light-nutrition-green: #e8f5e9;
-  --dark-nutrition-green: #00701a;
-  --text-dark: #333333;
-  --text-gray: #666666;
-  --border-gray: #e0e0e0;
+  --bg-dark: #0f172a;
+  --card-dark: #1c1b21;
+  --card-muted: #22212a;
+  --text-main: #e2e8f0;
+  --text-muted: #9ba4b5;
+  --border: #2b2c37;
+  --accent-green: #22c55e;
+  --light-green: #86efac;
   --white: #ffffff;
-  --light-gray: #f8f9fa;
 }
 
 /* ===== NUTRITION CONTAINER ===== */
@@ -16,7 +17,9 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  background: radial-gradient(circle at 20% 20%, rgba(192, 132, 252, 0.12), transparent 30%),
+    radial-gradient(circle at 80% 0%, rgba(123, 224, 214, 0.12), transparent 30%),
+    var(--bg-dark);
   padding-bottom: 80px;
   overflow-y: auto;
 }
@@ -35,13 +38,13 @@
 
 /* ===== NUTRITION HEADER ===== */
 .nutrition-header {
-  background: linear-gradient(135deg, #00c853 0%, #00701a 100%);
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
   color: var(--white);
   padding: 30px 20px;
   display: flex;
   align-items: center;
   gap: 20px;
-  box-shadow: 0 4px 12px rgba(0, 200, 83, 0.2);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
 }
 
 .nutrition-header-back {
@@ -93,21 +96,22 @@
 .nutrition-tab-btn {
   flex: 1;
   padding: 12px 16px;
-  border: none;
+  border: 1px solid var(--border);
   border-radius: 12px;
-  background: var(--white);
-  color: var(--text-dark);
+  background: var(--card-dark);
+  color: var(--text-muted);
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: none;
 }
 
 .nutrition-tab-btn.active {
-  background: var(--nutrition-green);
-  color: var(--white);
-  box-shadow: 0 4px 12px rgba(0, 200, 83, 0.2);
+  background: var(--accent-green);
+  color: #0f172a;
+  border-color: var(--accent-green);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
 }
 
 .nutrition-tab-btn:hover {
@@ -116,12 +120,13 @@
 
 /* ===== NUTRITION TIP CARD ===== */
 .nutrition-tip-card {
-  background: var(--white);
+  background: var(--card-dark);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 16px;
   display: flex;
   gap: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .nutrition-tip-icon {
@@ -134,20 +139,21 @@
 .nutrition-tip-content h3 {
   font-size: 16px;
   font-weight: 700;
-  color: var(--text-dark);
+  color: var(--text-main);
   margin: 0 0 4px 0;
 }
 
 .nutrition-tip-content p {
   font-size: 13px;
-  color: var(--text-gray);
+  color: var(--text-muted);
   line-height: 1.5;
   margin: 0;
 }
 
 /* ===== NUTRITION ITEM CARD ===== */
 .nutrition-item-card {
-  background: var(--white);
+  background: var(--card-dark);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 16px;
   display: flex;
@@ -155,12 +161,13 @@
   align-items: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .nutrition-item-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 200, 83, 0.1);
+  border-color: var(--accent-green);
+  box-shadow: 0 6px 16px rgba(34, 197, 94, 0.15);
 }
 
 .nutrition-item-emoji {
@@ -170,7 +177,7 @@
   justify-content: center;
   width: 60px;
   height: 60px;
-  background: var(--light-nutrition-green);
+  background: rgba(34, 197, 94, 0.15);
   border-radius: 12px;
   flex-shrink: 0;
 }
@@ -178,7 +185,7 @@
 .nutrition-item-content h4 {
   font-size: 16px;
   font-weight: 700;
-  color: var(--text-dark);
+  color: var(--text-main);
   margin: 0 0 4px 0;
   display: flex;
   align-items: center;
@@ -187,8 +194,8 @@
 
 .nutrition-item-category {
   display: inline-block;
-  background: var(--nutrition-green);
-  color: var(--white);
+  background: var(--accent-green);
+  color: #0f172a;
   font-size: 11px;
   font-weight: 600;
   padding: 2px 8px;

@@ -31,6 +31,7 @@ import Nutrition from './pages/Nutrition'
 import Vaccines from './pages/Vaccines'
 import Feeding from './pages/Feeding'
 import Growth from './pages/Growth'
+import StageSelect from './pages/StageSelect'
 import './App.css'
 
 /**
@@ -44,6 +45,9 @@ function App() {
     <Router>
       {/* Routes: Container for all route definitions */}
       <Routes>
+        {/* Route 0: Welcome / Stage selection */}
+        <Route path="/welcome" element={<StageSelect />} />
+
         {/* Route 1: Home Page (Dashboard) */}
         {/* Path: /home → Shows <Home /> component */}
         <Route path="/home" element={<Home />} />
@@ -75,7 +79,8 @@ function App() {
         {/* Route 8: Root Path Redirect */}
         {/* Path: / (any other path) → Redirect to /login */}
         {/* replace: replaces history entry so user can't go back to "/" */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Navigate to="/welcome" replace />} />
+        <Route path="*" element={<Navigate to="/welcome" replace />} />
       </Routes>
     </Router>
   )

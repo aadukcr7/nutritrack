@@ -16,7 +16,8 @@
  * - PasswordStrengthIndicator: Real-time password strength feedback
  */
 
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from '../hooks/useForm';
 import FormInput from '../components/FormInput';
 import DateInput from '../components/DateInput';
@@ -36,9 +37,23 @@ export default function Signup() {
     email: '',
     password: '',
     userType: 'pregnant',
-    dueDate: ''
+    dueDate: '',
+    babyDateOfBirth: ''
   });
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Prefill user type based on stage selection from welcome screen
+  useEffect(() => {
+    const stageFromNav = location.state?.stage || localStorage.getItem('selectedStage');
+    if (!stageFromNav) return;
+
+    const normalizedStage = stageFromNav === 'newParent' ? 'newParent' : 'pregnant';
+    setFormData(prev => ({
+      ...prev,
+      userType: normalizedStage
+    }));
+  }, [location.state, setFormData]);
 
   // ===== HANDLE USER TYPE CHANGE =====
   const handleUserTypeChange = (type) => {
@@ -74,6 +89,13 @@ export default function Signup() {
       return;
     }
 
+    // For new parents, require baby date of birth
+    if (formData.userType === 'newParent' && !formData.babyDateOfBirth) {
+      setError('Please enter baby\'s date of birth');
+      setIsLoading(false);
+      return;
+    }
+
     // Strict email validation - only letters, numbers, dots, and underscores allowed
     // Must start with letter, at least 3 chars before @
     const emailRegex = /^[a-zA-Z][a-zA-Z0-9._]{2,}@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -102,6 +124,7 @@ export default function Signup() {
         password: formData.password,
         userType: formData.userType,
         dueDate: formData.dueDate,
+        babyDateOfBirth: formData.babyDateOfBirth,
       });
 
       navigate('/login', { state: { message: 'Account created! Please sign in.' } });
@@ -176,6 +199,17 @@ export default function Signup() {
             value={formData.dueDate}
             onChange={handleInputChange}
           />
+
+          {/* Baby Date of Birth for New Parents */}
+          {formData.userType === 'newParent' && (
+            <DateInput
+              label="Baby's Date of Birth"
+              id="babyDateOfBirth"
+              name="babyDateOfBirth"
+              value={formData.babyDateOfBirth}
+              onChange={handleInputChange}
+            />
+          )}
 
           {/* Error Display */}
           <ErrorMessage message={error} />

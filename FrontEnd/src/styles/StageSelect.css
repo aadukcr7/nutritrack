@@ -1,0 +1,213 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&display=swap');
+
+:root {
+  --stage-bg: #121116;
+  --card-bg: #1c1b21;
+  --card-hover: #22212a;
+  --text-main: #f5f7fb;
+  --text-muted: #c5c8d4;
+  --accent: #7be0d6;
+  --accent-2: #c084fc;
+  --shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
+.stage-page {
+  min-height: 100vh;
+  background: radial-gradient(circle at 20% 20%, rgba(192, 132, 252, 0.2), transparent 30%),
+    radial-gradient(circle at 80% 10%, rgba(123, 224, 214, 0.18), transparent 25%),
+    var(--stage-bg);
+  color: var(--text-main);
+  font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 24px 18px 48px;
+}
+
+.stage-hero {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.bubble {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  filter: blur(6px);
+  opacity: 0.6;
+}
+
+.bubble-1 {
+  top: -80px;
+  left: -40px;
+  background: radial-gradient(circle, rgba(123, 224, 214, 0.35) 0%, rgba(12, 9, 15, 0) 70%);
+}
+
+.bubble-2 {
+  top: -120px;
+  right: 20px;
+  background: radial-gradient(circle, rgba(192, 132, 252, 0.3) 0%, rgba(12, 9, 15, 0) 70%);
+}
+
+.bubble-3 {
+  top: 80px;
+  right: -60px;
+  background: radial-gradient(circle, rgba(123, 224, 214, 0.18) 0%, rgba(12, 9, 15, 0) 70%);
+}
+
+.heart {
+  position: absolute;
+  color: #fcb0ff;
+  opacity: 0.75;
+  font-size: 18px;
+}
+
+.heart-1 {
+  top: 46px;
+  left: 32px;
+}
+
+.heart-2 {
+  top: 120px;
+  right: 48px;
+}
+
+.heart-3 {
+  top: 180px;
+  left: 50%;
+}
+
+.stage-content {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.brand-mark {
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2), transparent 45%),
+    linear-gradient(135deg, #9f7aea, #7be0d6);
+  display: grid;
+  place-items: center;
+  font-size: 38px;
+  box-shadow: var(--shadow);
+  margin-top: 40px;
+}
+
+.stage-title {
+  margin: 12px 0 4px;
+  font-size: 30px;
+  letter-spacing: 0.3px;
+}
+
+.stage-subtitle {
+  margin: 0 16px 10px;
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.stage-cards {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 8px 0 10px;
+}
+
+.stage-card {
+  width: 100%;
+  background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-radius: 18px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
+  color: inherit;
+  text-align: left;
+  box-shadow: var(--shadow);
+}
+
+.stage-card:hover,
+.stage-card:focus-visible {
+  background: var(--card-hover);
+  border-color: rgba(123, 224, 214, 0.35);
+  outline: none;
+  transform: translateY(-2px);
+}
+
+.card-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+}
+
+.card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card-title {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.card-desc {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.login-link {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.login-link:hover,
+.login-link:focus-visible {
+  color: #9ff1e9;
+  outline: none;
+}
+
+@media (max-width: 540px) {
+  .stage-page {
+    padding: 16px 14px 36px;
+  }
+
+  .stage-title {
+    font-size: 26px;
+  }
+
+  .card-title {
+    font-size: 15px;
+  }
+
+  .card-desc {
+    font-size: 12px;
+  }
+}

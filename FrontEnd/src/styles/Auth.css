@@ -1,16 +1,17 @@
-/* Auth Pages Styling - Maternity App */
+/* Auth Pages Styling - Dark Theme aligned with Stage Select */
 /* ===== CSS VARIABLES FOR EASY MAINTENANCE ===== */
 :root {
-  --primary-pink: #ff1493;
-  --primary-purple: #8b3a8b;
-  --light-purple: #f0e6f0;
-  --dark-blue: #1a3a52;
-  --text-gray: #666666;
-  --border-gray: #e0e0e0;
-  --error-red: #e74c3c;
-  --success-green: #27ae60;
+  --bg-dark: #0f172a;
+  --card-dark: #1c1b21;
+  --card-muted: #22212a;
+  --text-main: #e2e8f0;
+  --text-muted: #9ba4b5;
+  --border: #2b2c37;
+  --border-strong: #3b3d4a;
+  --accent: #7be0d6;
+  --accent-2: #c084fc;
+  --error-red: #f87171;
   --white: #ffffff;
-  --light-gray: #f8f9fa;
 }
 
 * {
@@ -20,77 +21,75 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #fff5f9 0%, #f0e6f0 100%);
+  background: radial-gradient(circle at 20% 20%, rgba(192, 132, 252, 0.12), transparent 30%),
+    radial-gradient(circle at 80% 0%, rgba(123, 224, 214, 0.12), transparent 30%),
+    var(--bg-dark);
+  color: var(--text-main);
 }
 
 /* ===== AUTH CONTAINER ===== */
-/* Full screen wrapper with gradient background */
 .auth-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #fff5f9 0%, #f0e6f0 100%);
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 24px 16px 48px;
 }
 
 /* ===== AUTH CARD ===== */
-/* White card with shadow - main form container */
 .auth-card {
-  background: var(--white);
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-  padding: 40px 30px;
+  background: linear-gradient(180deg, rgba(34, 33, 42, 0.9), rgba(28, 27, 33, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 18px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  padding: 38px 30px;
   width: 100%;
-  max-width: 450px;
+  max-width: 460px;
 }
 
 /* ===== ICON CONTAINER ===== */
-/* Decorative heart icon at top */
 .icon-container {
   display: flex;
   justify-content: center;
-  margin-bottom: 30px;
+  margin-bottom: 26px;
 }
 
 .heart-icon {
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, rgba(255, 20, 147, 0.1) 0%, rgba(139, 58, 139, 0.1) 100%);
+  width: 78px;
+  height: 78px;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.14), transparent 50%),
+    linear-gradient(135deg, var(--accent-2), var(--accent));
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 48px;
-  color: var(--primary-pink);
+  font-size: 42px;
+  color: var(--white);
 }
 
 /* ===== TITLE AND SUBTITLE ===== */
 .auth-title {
   text-align: center;
-  color: var(--dark-blue);
+  color: var(--text-main);
   font-size: 28px;
   font-weight: 700;
-  margin-bottom: 8px;
+  letter-spacing: 0.2px;
+  margin-bottom: 6px;
 }
 
 .auth-subtitle {
   text-align: center;
-  color: var(--text-gray);
+  color: var(--text-muted);
   font-size: 14px;
-  margin-bottom: 30px;
+  margin-bottom: 26px;
 }
 
 /* ===== FORM STYLING ===== */
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
 }
 
 .form-group {
@@ -100,31 +99,40 @@ body {
 }
 
 .form-label {
-  color: var(--dark-blue);
+  color: var(--text-main);
   font-size: 14px;
   font-weight: 600;
 }
 
-.form-input {
-  padding: 12px 16px;
-  border: 1px solid var(--border-gray);
-  border-radius: 8px;
+.form-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-input,
+.form-input-field {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
   font-size: 14px;
   font-family: inherit;
-  background: var(--white);
-  color: var(--dark-blue);
-  transition: all 0.3s ease;
+  background: #11121a;
+  color: var(--text-main);
+  transition: all 0.2s ease;
 }
 
-.form-input:focus {
+.form-input:focus,
+.form-input-field:focus {
   outline: none;
-  border-color: var(--primary-pink);
-  box-shadow: 0 0 0 3px rgba(255, 20, 147, 0.1);
-  background: var(--white);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(123, 224, 214, 0.2);
 }
 
-.form-input::placeholder {
-  color: #999;
+.form-input::placeholder,
+.form-input-field::placeholder {
+  color: #6f7686;
 }
 
 /* ===== USER TYPE SELECTOR ===== */
@@ -136,29 +144,29 @@ body {
 
 .user-type-btn {
   padding: 16px;
-  border: 2px solid var(--border-gray);
-  border-radius: 12px;
-  background: var(--light-gray);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card-dark);
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-gray);
+  color: var(--text-muted);
 }
 
 .user-type-btn:hover {
-  border-color: var(--primary-pink);
-  background: #fff5f9;
+  border-color: var(--accent);
+  background: var(--card-muted);
 }
 
 .user-type-btn.active {
-  border-color: var(--primary-pink);
-  background: linear-gradient(135deg, rgba(255, 20, 147, 0.05) 0%, rgba(139, 58, 139, 0.05) 100%);
-  color: var(--dark-blue);
+  border-color: var(--accent);
+  background: linear-gradient(135deg, rgba(123, 224, 214, 0.12), rgba(192, 132, 252, 0.12));
+  color: var(--text-main);
 }
 
 .user-type-btn .icon {
@@ -166,52 +174,52 @@ body {
   display: block;
   height: 28px;
   line-height: 28px;
-  color: var(--dark-blue);
+  color: var(--text-main);
 }
 
 /* ===== ERROR MESSAGE ===== */
 .error-message {
   padding: 10px 12px;
-  background-color: rgba(231, 76, 60, 0.1);
+  background-color: rgba(248, 113, 113, 0.12);
   border-left: 4px solid var(--error-red);
   color: var(--error-red);
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 13px;
-  margin-top: -10px;
+  margin-top: -4px;
 }
 
 /* ===== FORGOT PASSWORD LINK ===== */
 .forgot-password-link {
   text-align: right;
-  color: var(--primary-pink);
+  color: var(--accent);
   font-size: 13px;
   text-decoration: none;
-  transition: color 0.3s ease;
+  transition: color 0.2s ease;
   cursor: pointer;
 }
 
 .forgot-password-link:hover {
-  color: var(--primary-purple);
+  color: #9ff1e9;
 }
 
 /* ===== SUBMIT BUTTON ===== */
 .auth-button {
   padding: 14px 20px;
-  background: linear-gradient(135deg, var(--primary-pink) 0%, var(--primary-purple) 100%);
+  background: linear-gradient(135deg, var(--accent-2), var(--accent));
   color: white;
   border: none;
-  border-radius: 25px;
+  border-radius: 28px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 10px;
-  box-shadow: 0 4px 15px rgba(255, 20, 147, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin-top: 8px;
+  box-shadow: 0 10px 30px rgba(123, 224, 214, 0.25);
 }
 
 .auth-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 20, 147, 0.4);
+  box-shadow: 0 14px 34px rgba(123, 224, 214, 0.35);
 }
 
 .auth-button:active:not(:disabled) {
@@ -226,21 +234,21 @@ body {
 /* ===== FOOTER LINKS ===== */
 .auth-footer {
   text-align: center;
-  color: var(--text-gray);
+  color: var(--text-muted);
   font-size: 14px;
-  margin-top: 20px;
+  margin-top: 18px;
 }
 
 .auth-link {
-  color: var(--primary-pink);
+  color: var(--accent);
   text-decoration: none;
-  font-weight: 600;
-  transition: color 0.3s ease;
+  font-weight: 700;
+  transition: color 0.2s ease;
   cursor: pointer;
 }
 
 .auth-link:hover {
-  color: var(--primary-purple);
+  color: #9ff1e9;
   text-decoration: underline;
 }
 
