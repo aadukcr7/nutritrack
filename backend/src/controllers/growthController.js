@@ -25,10 +25,11 @@ export const getGrowthRecords = async (req, res, next) => {
 export const createGrowthRecord = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const { age_months, weight_kg, height_cm, head_circumference_cm } = req.body;
+    const { baby_id, age_months, weight_kg, height_cm, head_circumference_cm } = req.body;
 
     const newRecord = await GrowthRecord.create({
       user_id: userId,
+      baby_id,
       age_months,
       weight_kg,
       height_cm,
@@ -72,7 +73,7 @@ export const updateGrowthRecord = async (req, res, next) => {
   try {
     const { recordId } = req.params;
     const userId = req.user.id;
-    const { age_months, weight_kg, height_cm, head_circumference_cm } = req.body;
+    const { baby_id, age_months, weight_kg, height_cm, head_circumference_cm } = req.body;
 
     const record = await GrowthRecord.findOne({
       where: { id: recordId, user_id: userId },
@@ -83,6 +84,7 @@ export const updateGrowthRecord = async (req, res, next) => {
     }
 
     await record.update({
+      baby_id,
       age_months,
       weight_kg,
       height_cm,

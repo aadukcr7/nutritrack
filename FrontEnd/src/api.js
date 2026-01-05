@@ -110,6 +110,45 @@ export async function deleteGrowthRecord(recordId) {
   });
 }
 
+// ===== Babies =====
+export async function getBabies() {
+  return request('/api/babies');
+}
+
+export async function getBaby(babyId) {
+  return request(`/api/babies/${babyId}`);
+}
+
+export async function createBaby(babyData) {
+  return request('/api/babies', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(babyData),
+  });
+}
+
+export async function updateBaby(babyId, babyData) {
+  return request(`/api/babies/${babyId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(babyData),
+  });
+}
+
+export async function deleteBaby(babyId) {
+  return request(`/api/babies/${babyId}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function getBabyGrowthRecords(babyId) {
+  return request(`/api/babies/${babyId}/growth`);
+}
+
 // ===== Reminders =====
 export async function getReminders() {
   return request('/api/reminders/');
