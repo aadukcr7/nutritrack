@@ -6,22 +6,8 @@
  */
 
 export default function ReminderCard({ reminders = [] }) {
-  const defaultReminders = [
-    {
-      id: 1,
-      title: "Vaccine Due Tomorrow",
-      description: "2nd dose of Hepatitis B",
-      icon: "💉"
-    },
-    {
-      id: 2,
-      title: "Doctor Appointment",
-      description: "Dec 5, 2025 at 10:00 AM",
-      icon: "📅"
-    }
-  ];
-
-  const displayReminders = reminders.length > 0 ? reminders : defaultReminders;
+  // Only show actual reminders, no defaults
+  const displayReminders = reminders;
 
   return (
     <div className="reminders-section">
@@ -31,18 +17,24 @@ export default function ReminderCard({ reminders = [] }) {
       </div>
 
       <div className="reminders-list">
-        {displayReminders.map((reminder) => (
-          <div key={reminder.id} className="reminder-item">
-            <div className="reminder-icon">{reminder.icon}</div>
-            <div className="reminder-content">
-              <h3>{reminder.title}</h3>
-              <p>{reminder.description}</p>
+        {displayReminders.length > 0 ? (
+          displayReminders.map((reminder) => (
+            <div key={reminder.id} className="reminder-item">
+              <div className="reminder-icon">{reminder.icon}</div>
+              <div className="reminder-content">
+                <h3>{reminder.title}</h3>
+                <p>{reminder.formattedDate || reminder.description}</p>
+              </div>
+              <div className="reminder-action">
+                🔔
+              </div>
             </div>
-            <div className="reminder-action">
-              🔔
-            </div>
+          ))
+        ) : (
+          <div style={{ textAlign: 'center', padding: '20px', color: '#999' }}>
+            <p>No reminders for today</p>
           </div>
-        ))}
+        )}
       </div>
     </div>
   );

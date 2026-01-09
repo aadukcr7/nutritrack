@@ -15,7 +15,7 @@ import NotificationBanner from '../components/NotificationBanner';
 import TipCard from '../components/TipCard';
 import BottomNavigation from '../components/BottomNavigation';
 import NotificationService from '../services/NotificationService';
-import { getReminders, getDailyTip, getCurrentUser, getAuthToken, getUserVaccineReminders } from '../api';
+import { getReminders, getDailyTip, getCurrentUser, getAuthToken, getUserVaccineReminders, getBabies } from '../api';
 import { isVaccineDueWithin } from '../utils/vaccineSchedule';
 import '../styles/Home.css';
 import '../styles/NotificationCard.css';
@@ -169,18 +169,39 @@ export default function Home() {
         localStorage.setItem('userType', userType);
 
         const { trimester, weeksPregnant } = calculateTrimester(user.due_date);
-        const babyAge = calculateBabyAge(user.baby_date_of_birth);
+        
+        let babyAgeLabel = 'Age unknown';
+        let babyAgeMonths = null;
+        let babyAgeWeeks = null;
+        let babyDob = null;
+
+        // If user is newParent, fetch baby data and calculate age
+        if (userType === 'newParent') {
+          try {
+            const babiesData = await getBabies().catch(() => []);
+            if (babiesData && babiesData.length > 0) {
+              const activeBaby = babiesData.find(b => b.is_active) || babiesData[0];
+              babyDob = activeBaby.date_of_birth;
+              const babyAge = calculateBabyAge(babyDob);
+              babyAgeLabel = babyAge.label;
+              babyAgeMonths = babyAge.monthsValue;
+              babyAgeWeeks = babyAge.weeks;
+            }
+          } catch (error) {
+            console.error('Error fetching baby data:', error);
+          }
+        }
 
         setUserData({
           userName: user.full_name || "User",
-          trimester: userType === 'pregnant' ? trimester : babyAge.label,
-          dueDate: userType === 'pregnant' ? user.due_date : user.baby_date_of_birth,
+          trimester: userType === 'pregnant' ? trimester : babyAgeLabel,
+          dueDate: user.due_date,
           weeksPregnant: userType === 'pregnant' ? weeksPregnant : null,
           userType,
-          babyAgeLabel: babyAge.label,
-          babyAgeMonths: babyAge.monthsValue,
-          babyAgeWeeks: babyAge.weeks,
-          babyDob: user.baby_date_of_birth
+          babyAgeLabel: babyAgeLabel,
+          babyAgeMonths: babyAgeMonths,
+          babyAgeWeeks: babyAgeWeeks,
+          babyDob: babyDob
         });
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -198,19 +219,61 @@ export default function Home() {
       }
 
       try {
-        // Fetch reminders from backend
-        const remindersData = await getReminders();
-        setReminders(remindersData.map(r => ({
+        // Fetch both general reminders and vaccine reminders
+        const [remindersData, vaccineRemindersData] = await Promise.all([
+          getReminders().catch(() => []),
+          getUserVaccineReminders().catch(() => [])
+        ]);
+        
+        // Combine all reminders
+        const allRemindersList = [
+          ...remindersData,
+          ...vaccineRemindersData
+        ];
+        
+        // Filter reminders to show only today's reminders
+        const today = new Date();
+        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0);
+        const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+        
+        const todayReminders = allRemindersList.filter(r => {
+          const reminderDate = new Date(r.reminder_date);
+          return reminderDate >= todayStart && reminderDate <= todayEnd;
+        });
+        
+        // Deduplicate reminders by title to prevent showing the same reminder twice
+        const reminderMap = new Map();
+        todayReminders.forEach(r => {
+          // Use title + date as key to identify unique reminders
+          const reminderDateTime = new Date(r.reminder_date).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          const key = `${r.title || r.vaccine_name}|${reminderDateTime}`;
+          
+          // Keep only one copy of each unique reminder
+          if (!reminderMap.has(key)) {
+            reminderMap.set(key, r);
+          }
+        });
+        
+        const uniqueReminders = Array.from(reminderMap.values());
+        
+        setReminders(uniqueReminders.map(r => ({
           id: r.id,
-          title: r.title,
-          description: new Date(r.reminder_date).toLocaleDateString('en-US', {
+          title: r.title || r.vaccine_name,
+          description: r.description || (r.dose_number ? `Dose ${r.dose_number} of ${r.total_doses}` : ''),
+          formattedDate: new Date(r.reminder_date).toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric',
             year: 'numeric',
             hour: '2-digit',
             minute: '2-digit'
           }),
-          icon: r.type === 'vaccine' ? '💉' : '📅'
+          icon: (r.type === 'vaccine' || r.vaccine_name) ? '💉' : '📅'
         })));
       } catch (error) {
         console.error('Error fetching reminders:', error);

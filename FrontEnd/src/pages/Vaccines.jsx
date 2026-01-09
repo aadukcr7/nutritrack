@@ -10,9 +10,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import VaccinesHeader from '../components/VaccinesHeader';
 import VaccineCard from '../components/VaccineCard';
+import KhopCard from '../components/KhopCard';
 import BottomNavigation from '../components/BottomNavigation';
 import NotificationService from '../services/NotificationService';
-import { getAllVaccines, getUserVaccineReminders, createVaccineReminder, updateVaccineReminderStatus, getCurrentUser } from '../api';
+import { getAllVaccines, getUserVaccineReminders, createVaccineReminder, updateVaccineReminderStatus, getCurrentUser, getBabies } from '../api';
 import { getNextDoseDate, isVaccineDueWithin, generateAutomaticVaccineReminders } from '../utils/vaccineSchedule';
 import '../styles/Vaccines.css';
 
@@ -24,24 +25,48 @@ export default function Vaccines() {
   const [loading, setLoading] = useState(true);
   const [autoSetupDone, setAutoSetupDone] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [showKhopCard, setShowKhopCard] = useState(false);
+  const [babies, setBabies] = useState([]);
+  const [selectedBaby, setSelectedBaby] = useState(null);
   
   // Fetch all available vaccines and user reminders on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [vaccinesData, remindersData, user] = await Promise.all([
+        const [vaccinesData, remindersData, user, babiesData] = await Promise.all([
           getAllVaccines(),
           getUserVaccineReminders().catch(() => []),
-          getCurrentUser().catch(() => null)
+          getCurrentUser().catch(() => null),
+          getBabies().catch(() => [])
         ]);
         
         setAllVaccines(vaccinesData || []);
-        setUserReminders(remindersData || []);
         setCurrentUser(user);
+        setBabies(babiesData || []);
+        
+        // Set selected baby to the first active baby
+        if (babiesData && babiesData.length > 0) {
+          const activeBaby = babiesData.find(b => b.is_active) || babiesData[0];
+          setSelectedBaby(activeBaby);
+        }
 
-        // Auto-generate reminders if user has baby DOB and no reminders exist
-        if (user && user.baby_date_of_birth && (!remindersData || remindersData.length === 0)) {
-          await autoCreateVaccineReminders(vaccinesData, user.baby_date_of_birth);
+        // Check if auto-setup was done for this user using localStorage
+        const autoSetupKey = `vaccine_auto_setup_${user?.id}`;
+        const autoSetupDone = localStorage.getItem(autoSetupKey);
+        
+        // Only auto-create reminders if not done before
+        if (!autoSetupDone) {
+          const babyDOB = babiesData && babiesData.length > 0 ? babiesData[0].date_of_birth : null;
+          if (babyDOB && vaccinesData && vaccinesData.length > 0) {
+            await autoCreateAllVaccineReminders(vaccinesData, remindersData || [], babyDOB);
+            // Mark auto-setup as done for this user
+            localStorage.setItem(autoSetupKey, 'true');
+          } else {
+            setUserReminders(remindersData || []);
+          }
+        } else {
+          // If already done, just use the fetched reminders
+          setUserReminders(remindersData || []);
         }
       } catch (error) {
         console.error('Error fetching vaccine data:', error);
@@ -61,102 +86,120 @@ export default function Vaccines() {
     return daysRemaining > 0 && daysRemaining <= 7;
   };
 
-  // Auto-create all vaccine reminders based on baby's birth date
-  const autoCreateVaccineReminders = async (vaccines, babyBirthDate) => {
+  // Auto-create reminders for vaccines that don't have them yet
+  const autoCreateAllVaccineReminders = async (vaccines, existingReminders, babyBirthDate) => {
     try {
       if (!babyBirthDate) {
         console.log('No baby birth date available for auto-setup');
+        setUserReminders(existingReminders);
         return;
       }
 
-      // Generate reminder data for all vaccines
-      const reminderDataList = generateAutomaticVaccineReminders(
-        vaccines,
-        babyBirthDate,
-        'baby'
-      );
+      // Find vaccines that don't have any reminders yet
+      const vaccinesWithReminders = new Set(existingReminders.map(r => r.vaccine_name));
+      const vaccinesNeedingReminders = vaccines.filter(v => !vaccinesWithReminders.has(v.name));
 
-      if (reminderDataList.length === 0) {
-        console.log('No reminders to auto-create');
+      if (vaccinesNeedingReminders.length === 0) {
+        console.log('All vaccines already have reminders');
+        setUserReminders(existingReminders);
         return;
       }
 
-      console.log(`Auto-creating ${reminderDataList.length} vaccine reminders...`);
+      console.log(`Auto-creating reminders for ${vaccinesNeedingReminders.length} vaccines...`);
 
-      // Create all reminders
+      // Create reminders for each vaccine without reminders
       const createdReminders = [];
-      for (const reminderData of reminderDataList) {
+      for (const vaccine of vaccinesNeedingReminders) {
         try {
-          const created = await createVaccineReminder(reminderData);
-          createdReminders.push(created);
-        } catch (error) {
-          console.error(`Error creating reminder for ${reminderData.vaccine_name}:`, error);
-        }
-      }
-
-      // Update state with all created reminders
-      if (createdReminders.length > 0) {
-        setUserReminders(prev => [...prev, ...createdReminders]);
-
-        // Show success notification
-        if (Notification.permission === 'granted') {
-          NotificationService.sendNotification(
-            'Vaccine Schedule Created! 🎉',
-            {
-              body: `${createdReminders.length} vaccine reminders auto-created based on your baby's birth date.`,
-              tag: 'vaccine-auto-setup',
-            }
+          // Generate reminder data for all doses
+          const reminderDataList = generateAutomaticVaccineReminders(
+            [vaccine],
+            babyBirthDate,
+            'baby'
           );
-        }
 
-        setAutoSetupDone(true);
+          // Create all doses for this vaccine
+          for (const reminderData of reminderDataList) {
+            const created = await createVaccineReminder(reminderData);
+            createdReminders.push(created);
+          }
+        } catch (error) {
+          console.error(`Error creating reminder for ${vaccine.name}:`, error);
+        }
       }
+
+      // Update state with all reminders (existing + newly created)
+      const allReminders = [...existingReminders, ...createdReminders];
+      setUserReminders(allReminders);
+
+      // Show success notification
+      if (createdReminders.length > 0 && Notification.permission === 'granted') {
+        NotificationService.sendNotification(
+          'Vaccine Reminders Created! 🎉',
+          {
+            body: `${createdReminders.length} vaccine reminders auto-created.`,
+            tag: 'vaccine-auto-setup',
+          }
+        );
+      }
+
+      setAutoSetupDone(true);
     } catch (error) {
       console.error('Error in auto-create vaccine reminders:', error);
+      setUserReminders(existingReminders);
     }
   };
 
-  // Calculate stats from user reminders
-  const stats = {
-    completed: userReminders.filter(v => v.status === 'completed').length,
-    pending: userReminders.filter(v => v.status === 'pending').length,
-    overdue: userReminders.filter(v => v.status === 'overdue').length
-  };
-
-  // Combine available vaccines with user reminders
+  // Get display vaccines: scheduled reminders + available vaccines with no reminders
   const getDisplayVaccines = () => {
-    // Deduplicate userReminders by ID - if same ID appears multiple times, keep only the latest one
+    // Deduplicate userReminders by vaccine_name + dose_number combination
+    // Keep the most recent version if duplicates exist
     const reminderMap = new Map();
     userReminders.forEach(reminder => {
-      if (!reminderMap.has(reminder.id) || 
-          (reminderMap.get(reminder.id).updatedAt && reminder.updatedAt && 
-           new Date(reminder.updatedAt) > new Date(reminderMap.get(reminder.id).updatedAt))) {
-        reminderMap.set(reminder.id, reminder);
-      } else if (!reminderMap.get(reminder.id).updatedAt) {
-        // If no updatedAt, use the first one
-        reminderMap.set(reminder.id, reminder);
+      const key = `${reminder.vaccine_name}|${reminder.dose_number || 1}`;
+      
+      // If key doesn't exist, or new reminder is more recent, update it
+      if (!reminderMap.has(key)) {
+        reminderMap.set(key, reminder);
+      } else {
+        const existing = reminderMap.get(key);
+        // Compare by updatedAt or id to keep the most recent
+        const existingTime = existing.updatedAt ? new Date(existing.updatedAt).getTime() : existing.id;
+        const newTime = reminder.updatedAt ? new Date(reminder.updatedAt).getTime() : reminder.id;
+        
+        if (newTime > existingTime) {
+          reminderMap.set(key, reminder);
+        }
       }
     });
 
     const uniqueReminders = Array.from(reminderMap.values());
-    
-    // Start with all unique user reminders (all doses they've scheduled)
-    const displayVaccines = [...uniqueReminders];
-    
-    // Add available vaccines that don't have ANY reminder yet
+
+    // Track vaccines already scheduled
     const vaccinesWithReminders = new Set(uniqueReminders.map(r => r.vaccine_name));
-    
+
+    // Build display list starting with reminders
+    const displayVaccines = [...uniqueReminders];
+
+    // Add available vaccines that have no reminders yet
     allVaccines.forEach(vaccine => {
-      // Only add as available if NO reminders exist for this vaccine (no doses at all)
       if (!vaccinesWithReminders.has(vaccine.name)) {
         displayVaccines.push({
-          ...vaccine,
+          id: `available-${vaccine.id || vaccine.name}`,
+          vaccine_name: vaccine.name,
+          vaccine_icon: vaccine.emoji,
+          description: vaccine.description,
+          reminder_date: '',
           status: 'available',
-          isAvailable: true,
+          recipient: vaccine.recipient_type === 'baby' ? 'baby' : 'mother',
+          recipient_type: vaccine.recipient_type,
+          total_doses: vaccine.total_doses,
+          dose_number: 0,
+          recommended: vaccine.recommended,
         });
       }
     });
-    
+
     return displayVaccines;
   };
 
@@ -188,83 +231,12 @@ export default function Vaccines() {
 
   const filteredVaccines = getFilteredVaccines();
 
-  const handleAddVaccine = async (vaccine) => {
-    try {
-      // Check if this vaccine already has reminders
-      const existingReminders = userReminders.filter(r => r.vaccine_name === vaccine.name);
-      if (existingReminders.length > 0) {
-        alert(`${vaccine.name} already has reminders scheduled!`);
-        return;
-      }
-
-      // For first dose, use current date as baseline
-      const today = new Date();
-      const firstDoseDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-      
-      const reminderData = {
-        vaccine_name: vaccine.name,
-        reminder_date: firstDoseDate,
-        dose_number: 1,
-        total_doses: vaccine.total_doses || 1,
-        recipient: vaccine.recipient_type === 'baby' ? 'baby' : 'mother',
-        age_due_months: 0,
-        description: vaccine.description,
-        vaccine_icon: vaccine.emoji,
-      };
-
-      const newReminder = await createVaccineReminder(reminderData);
-      const updatedReminders = [newReminder];
-      
-      // Auto-create reminders for all remaining doses
-      if (vaccine.total_doses && vaccine.total_doses > 1) {
-        for (let i = 2; i <= vaccine.total_doses; i++) {
-          const nextDoseDate = getNextDoseDate(vaccine.name, i - 1, firstDoseDate);
-          
-          if (nextDoseDate) {
-            const reminderToCreate = {
-              vaccine_name: vaccine.name,
-              reminder_date: nextDoseDate,
-              dose_number: i,
-              total_doses: vaccine.total_doses,
-              recipient: vaccine.recipient_type === 'baby' ? 'baby' : 'mother',
-              age_due_months: 0,
-              description: vaccine.description,
-              vaccine_icon: vaccine.emoji,
-            };
-            
-            const createdReminder = await createVaccineReminder(reminderToCreate);
-            updatedReminders.push(createdReminder);
-          }
-        }
-
-        // Show notification about all doses scheduled
-        if (Notification.permission === 'granted') {
-          NotificationService.sendNotification(
-            `${vaccine.name} - All ${vaccine.total_doses} Doses Scheduled`,
-            {
-              body: `All doses scheduled automatically. Check your calendar for dates.`,
-              tag: `vaccine-all-doses-${vaccine.id}`,
-            }
-          );
-        }
-      } else {
-        // Single dose vaccine
-        if (Notification.permission === 'granted') {
-          NotificationService.sendNotification(
-            `${vaccine.name} Added`,
-            {
-              body: `Reminder scheduled for ${firstDoseDate.toDateString()}`,
-              tag: `vaccine-added-${vaccine.id}`,
-            }
-          );
-        }
-      }
-
-      // Update state with all created reminders at once
-      setUserReminders(prev => [...prev, ...updatedReminders]);
-    } catch (error) {
-      console.error('Error adding vaccine reminder:', error);
-    }
+  // Vaccine statistics for header cards (aligned with displayed data)
+  const displayVaccines = getDisplayVaccines();
+  const stats = {
+    completed: displayVaccines.filter(v => v.status === 'completed').length,
+    pending: displayVaccines.filter(v => v.status !== 'completed').length,
+    overdue: displayVaccines.filter(v => v.status === 'overdue').length,
   };
 
   const handleMarkDone = async (id) => {
@@ -364,8 +336,20 @@ export default function Vaccines() {
 
   return (
     <div className="vaccines-container">
+      {/* Khop Card Modal */}
+      <KhopCard 
+        isOpen={showKhopCard}
+        onClose={() => setShowKhopCard(false)}
+        babyName={selectedBaby?.name || 'Baby'}
+        babyDOB={selectedBaby?.date_of_birth}
+        completedVaccines={userReminders.filter(v => v.status === 'completed')}
+      />
+
       {/* Vaccines Header */}
-      <VaccinesHeader onBack={() => navigate('/home')} />
+      <VaccinesHeader 
+        onBack={() => navigate('/home')}
+        onKhopCard={() => setShowKhopCard(true)}
+      />
 
       {/* Main Content */}
       <div className="vaccines-main">
@@ -386,44 +370,6 @@ export default function Vaccines() {
           </div>
         </div>
 
-        {/* Auto-Generate Button - Show if no reminders exist */}
-        {userReminders.length === 0 && allVaccines.length > 0 && (
-          <div style={{ 
-            backgroundColor: '#e8f5e9', 
-            border: '2px solid #4caf50',
-            borderRadius: '10px',
-            padding: '16px',
-            margin: '16px 0',
-            textAlign: 'center'
-          }}>
-            <p style={{ margin: '0 0 12px 0', color: '#333', fontWeight: '500' }}>
-              📅 No vaccines scheduled yet?
-            </p>
-            <button
-              onClick={() => {
-                if (currentUser && currentUser.baby_date_of_birth) {
-                  autoCreateVaccineReminders(allVaccines, currentUser.baby_date_of_birth);
-                } else {
-                  alert('Please complete your profile with your baby\'s birth date first.');
-                  navigate('/profile');
-                }
-              }}
-              style={{
-                backgroundColor: '#4caf50',
-                color: 'white',
-                border: 'none',
-                padding: '10px 20px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500'
-              }}
-            >
-              🚀 Auto-Generate Vaccine Schedule
-            </button>
-          </div>
-        )}
-
         {/* Tab Selection */}
         <div className="vaccine-tabs">
           <button 
@@ -438,7 +384,7 @@ export default function Vaccines() {
           >
             Mother
           </button>
-          <button 
+<button 
             className={`vaccine-tab-btn ${activeTab === 'baby' ? 'active' : ''}`}
             onClick={() => setActiveTab('baby')}
           >
@@ -456,44 +402,9 @@ export default function Vaccines() {
         <div className="vaccine-cards-list">
           {filteredVaccines.length > 0 ? (
             filteredVaccines.map((vaccine) => {
-              // For available vaccines (not yet scheduled)
-              if (vaccine.isAvailable) {
-                return (
-                  <div key={`available-${vaccine.id}`} className="vaccine-card available">
-                    <div className="vaccine-card-header">
-                      <div className="vaccine-card-icon">{vaccine.emoji}</div>
-                      <div className="vaccine-card-title-section">
-                        <h3 className="vaccine-card-title">{vaccine.name}</h3>
-                        <span className="vaccine-card-status available">
-                          ➕ Available
-                        </span>
-                      </div>
-                    </div>
-                    <div className="vaccine-card-details">
-                      <div className="vaccine-detail-item">
-                        <span className="vaccine-detail-label">ℹ</span>
-                        <span className="vaccine-detail-value">{vaccine.description}</span>
-                      </div>
-                      <div className="vaccine-detail-item">
-                        <span className="vaccine-detail-label">💉</span>
-                        <span className="vaccine-detail-value">
-                          {vaccine.total_doses} dose{vaccine.total_doses !== 1 ? 's' : ''}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="vaccine-card-action">
-                      <button 
-                        className="vaccine-action-btn add-vaccine"
-                        onClick={() => handleAddVaccine(vaccine)}
-                      >
-                        Add Reminder
-                      </button>
-                    </div>
-                  </div>
-                );
-              }
-
-              // For scheduled vaccines (with reminders)
+              // Find the original vaccine data to get 'recommended' status
+              const originalVaccine = allVaccines.find(v => v.name === vaccine.vaccine_name);
+              
               return (
                 <VaccineCard
                   key={`reminder-${vaccine.id}`}
@@ -502,11 +413,11 @@ export default function Vaccines() {
                   emoji={vaccine.vaccine_icon || '💉'}
                   description={vaccine.description}
                   dueDate={vaccine.reminder_date}
-                  babyBirthDate={currentUser?.baby_date_of_birth}
                   status={vaccine.status}
                   forPerson={vaccine.recipient === 'baby' ? 'Baby' : 'Mother'}
                   details={vaccine.total_doses ? `${vaccine.dose_number || 1} of ${vaccine.total_doses}` : 'Single dose'}
                   isDueWithinWeek={isDueWithinWeek(vaccine.reminder_date)}
+                  recommended={originalVaccine?.recommended || false}
                   onMarkDone={() => handleMarkDone(vaccine.id)}
                 />
               );

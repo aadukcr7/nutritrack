@@ -37,8 +37,7 @@ export default function Signup() {
     email: '',
     password: '',
     userType: 'pregnant',
-    dueDate: '',
-    babyDateOfBirth: ''
+    dueDate: ''
   });
   const navigate = useNavigate();
   const location = useLocation();
@@ -145,18 +144,13 @@ export default function Signup() {
       return;
     }
 
-    // Require date based on user type
     if (formData.userType === 'pregnant' && !formData.dueDate) {
       setError('Please enter your due date');
       setIsLoading(false);
       return;
     }
 
-    if (formData.userType === 'newParent' && !formData.babyDateOfBirth) {
-      setError('Please enter baby\'s date of birth');
-      setIsLoading(false);
-      return;
-    }
+    // Note: Dates (due date or baby DOB) will be collected after signup when creating baby profile
 
     // Strict email validation - only letters, numbers, dots, and underscores allowed
     // Must start with letter, at least 3 chars before @
@@ -185,8 +179,7 @@ export default function Signup() {
         email: formData.email,
         password: formData.password,
         userType: formData.userType,
-        dueDate: formData.userType === 'pregnant' ? formData.dueDate : '',
-        babyDateOfBirth: formData.userType === 'newParent' ? formData.babyDateOfBirth : '',
+        dueDate: formData.userType === 'pregnant' ? formData.dueDate : ''
       });
 
       navigate('/login', { state: { message: 'Account created! Please sign in.' } });
@@ -266,24 +259,15 @@ export default function Signup() {
             onUserTypeChange={handleUserTypeChange}
           />
 
-          {/* Single date field based on user type */}
-          {formData.userType === 'pregnant' ? (
+          {/* Due Date Input - Only for pregnant users */}
+          {formData.userType === 'pregnant' && (
             <DateInput
-              label="Due Date"
+              label="Due Date (Trimester)"
               id="dueDate"
               name="dueDate"
               value={formData.dueDate}
               onChange={handleInputChange}
               minDate={new Date()}
-            />
-          ) : (
-            <DateInput
-              label="Baby's Date of Birth"
-              id="babyDateOfBirth"
-              name="babyDateOfBirth"
-              value={formData.babyDateOfBirth}
-              onChange={handleInputChange}
-              maxDate={new Date()}
             />
           )}
 

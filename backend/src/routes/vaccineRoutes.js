@@ -6,6 +6,7 @@ import {
   createVaccineReminder,
   updateVaccineReminderStatus,
   deleteVaccineReminder,
+  cleanupDuplicateReminders,
 } from '../controllers/vaccineController.js';
 import { authenticateToken } from '../middleware/auth.js';
 
@@ -17,6 +18,12 @@ const router = express.Router();
  * Must be BEFORE /:vaccineId to avoid route conflicts
  */
 router.get('/reminders/user', authenticateToken, getUserVaccineReminders);
+
+/**
+ * POST /vaccines/reminders/cleanup
+ * Clean up duplicate vaccine reminders
+ */
+router.post('/reminders/cleanup', authenticateToken, cleanupDuplicateReminders);
 
 /**
  * POST /vaccines/reminders

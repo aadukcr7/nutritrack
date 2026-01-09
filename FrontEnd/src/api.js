@@ -60,7 +60,7 @@ export async function getCurrentUser() {
   });
 }
 
-export async function register({ fullName, email, dueDate, userType, password, babyDateOfBirth }) {
+export async function register({ fullName, email, dueDate, userType, password }) {
   // Send dates as YYYY-MM-DD strings (no timezone conversion needed)
   return request('/api/auth/register', {
     method: 'POST',
@@ -70,10 +70,8 @@ export async function register({ fullName, email, dueDate, userType, password, b
     body: JSON.stringify({
       email,
       password,
-      full_name: fullName,
-      due_date: dueDate || null,
+      full_name: fullName,      due_date: dueDate || null,      due_date: dueDate || null,
       user_type: userType,
-      baby_date_of_birth: babyDateOfBirth || null,
     }),
   });
 }

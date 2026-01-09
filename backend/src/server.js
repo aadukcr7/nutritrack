@@ -4,6 +4,7 @@ import sequelize from './db/sequelize.js';
 import { config } from './config/index.js';
 import { errorHandler } from './middleware/auth.js';
 import seedVaccines from './db/vaccineSeeds.js';
+import seedFeedings from './db/feedingSeeds.js';
 
 // Import routes
 import authRoutes from './routes/authRoutes.js';
@@ -13,6 +14,7 @@ import reminderRoutes from './routes/reminderRoutes.js';
 import vaccineRoutes from './routes/vaccineRoutes.js';
 import staticRoutes from './routes/staticRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
+import feedingRoutes from './routes/feedingRoutes.js';
 
 const app = express();
 
@@ -29,6 +31,7 @@ app.use('/api/reminders', reminderRoutes);
 app.use('/api/vaccines', vaccineRoutes);
 app.use('/api/static', staticRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/api/feedings', feedingRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -67,6 +70,14 @@ const startServer = async () => {
     // Seed vaccines
     await seedVaccines();
     console.log('Vaccine seeds loaded');
+
+    // Seed feedings
+    try {
+      await seedFeedings();
+      console.log('Feeding seeds loaded');
+    } catch (err) {
+      console.warn('Feeding seeds skipped or failed:', err.message);
+    }
 
     // Start server
     const PORT = config.server.port;

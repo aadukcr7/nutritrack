@@ -4,20 +4,13 @@
  */
 
 export const vaccineScheduleConfig = {
-  'Tetanus Diphtheria (Td)': {
-    totalDoses: 2,
-    spacing: [
-      { dose: 1, ageMonths: 0, note: 'During pregnancy - 1st dose' },
-      { dose: 2, ageMonths: 1, note: 'During pregnancy - 2nd dose onwards' }
-    ]
-  },
   'BCG (Bacillus Calmette Guerin)': {
     totalDoses: 1,
     spacing: [
       { dose: 1, ageMonths: 0, note: 'At birth' }
     ]
   },
-  'Pentavalent Vaccine (DPT, HepB, Hib)': {
+  'Pentavalent Vaccine (Diphtheria, Pertussis, Tetanus, Hepatitis B and Hemophilus influenza B)': {
     totalDoses: 3,
     spacing: [
       { dose: 1, ageMonths: 1.5, note: '6 weeks' },
@@ -48,11 +41,11 @@ export const vaccineScheduleConfig = {
       { dose: 2, ageMonths: 4, note: '10 weeks' }
     ]
   },
-  'fIPV (Fractional Injectible Polio Vaccine)': {
+  'fIPV (Fractional Injectable Polio Vaccine)': {
     totalDoses: 2,
     spacing: [
-      { dose: 1, ageMonths: 3.5, note: '14 weeks' },
-      { dose: 2, ageMonths: 9, note: '9 months' }
+      { dose: 1, ageMonths: 1.5, note: '6 weeks' },
+      { dose: 2, ageMonths: 3.5, note: '14 weeks' }
     ]
   },
   'MR (Measles - Rubella)': {
@@ -74,30 +67,45 @@ export const vaccineScheduleConfig = {
       { dose: 1, ageMonths: 15, note: '15 months' }
     ]
   },
-  'HPV (Human Papillomavirus)': {
-    totalDoses: 1,
+  'Hepatitis A Vaccine': {
+    totalDoses: 2,
     spacing: [
-      { dose: 1, ageMonths: 0, note: 'School girls aged 6-10' }
+      { dose: 1, ageMonths: 12, note: 'After 1 year' },
+      { dose: 2, ageMonths: 18, note: '6 months after first dose' }
     ]
   },
-  'Tdap (Tetanus, Diphtheria, Pertussis)': {
-    totalDoses: 1,
+  'Varicella (Chickenpox) Vaccine': {
+    totalDoses: 2,
     spacing: [
-      { dose: 1, ageMonths: 0, note: 'Booster for adults' }
+      { dose: 1, ageMonths: 12, note: 'After 12 months' },
+      { dose: 2, ageMonths: 15, note: '15 months booster' }
     ]
   },
-  'Flu Shot (Influenza)': {
+  'Influenza (Flu) Vaccine': {
     totalDoses: 1,
     spacing: [
-      { dose: 1, ageMonths: 0, note: 'Annually' }
+      { dose: 1, ageMonths: 6, note: 'After 6 months (annual)' }
     ]
   },
-  'Hepatitis B': {
+  'HPV (Human Papillomavirus) Vaccine': {
+    totalDoses: 2,
+    spacing: [
+      { dose: 1, ageMonths: 120, note: '9-14 years' },
+      { dose: 2, ageMonths: 126, note: '6 months after first dose' }
+    ]
+  },
+  'Meningococcal Vaccine': {
+    totalDoses: 1,
+    spacing: [
+      { dose: 1, ageMonths: 9, note: '9 months or as advised' }
+    ]
+  },
+  'Rabies (Pre-exposure) Vaccine': {
     totalDoses: 3,
     spacing: [
-      { dose: 1, ageMonths: 0, note: 'At birth' },
-      { dose: 2, ageMonths: 1, note: '1 month' },
-      { dose: 3, ageMonths: 6, note: '6 months' }
+      { dose: 1, ageMonths: 0, note: 'Day 0 (pre-exposure)' },
+      { dose: 2, ageMonths: 1, note: '1 month after first dose' },
+      { dose: 3, ageMonths: 2, note: '2 months after first dose' }
     ]
   }
 };
