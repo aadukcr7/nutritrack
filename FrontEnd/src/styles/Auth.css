@@ -92,6 +92,35 @@ body {
   gap: 18px;
 }
 
+.oauth-block {
+  margin-bottom: 16px;
+}
+
+.oauth-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-muted);
+  font-size: 12px;
+  margin: 12px 0 18px;
+}
+
+.oauth-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.oauth-text {
+  white-space: nowrap;
+}
+
+.oauth-hint {
+  margin-top: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
 .form-group {
   display: flex;
   flex-direction: column;

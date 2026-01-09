@@ -13,6 +13,7 @@
  * - SubmitButton: Reusable submit button component
  */
 
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from '../hooks/useForm';
 import FormInput from '../components/FormInput';
@@ -20,7 +21,7 @@ import ErrorMessage from '../components/ErrorMessage';
 import AuthHeader from '../components/AuthHeader';
 import AuthFooter from '../components/AuthFooter';
 import SubmitButton from '../components/SubmitButton';
-import { login, setAuthToken } from '../api';
+import { login, googleLogin, setAuthToken } from '../api';
 import '../styles/Auth.css';
 
 export default function Login() {
@@ -30,6 +31,62 @@ export default function Login() {
     password: ''
   });
   const navigate = useNavigate();
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+  const handleGoogleCredentialResponse = async (response) => {
+    const idToken = response?.credential;
+    if (!idToken) {
+      setError('Google sign-in failed');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await googleLogin(idToken);
+      setAuthToken(result.access_token);
+      navigate('/home');
+    } catch (err) {
+      setError(err.message || 'Google sign-in failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!googleClientId) return;
+
+    const initGoogle = () => {
+      if (!window.google?.accounts?.id) return;
+      window.google.accounts.id.initialize({
+        client_id: googleClientId,
+        callback: handleGoogleCredentialResponse,
+      });
+      const buttonTarget = document.getElementById('google-signin-button');
+      if (buttonTarget) {
+        window.google.accounts.id.renderButton(buttonTarget, {
+          theme: 'outline',
+          size: 'large',
+          width: '100%',
+        });
+      }
+    };
+
+    if (window.google?.accounts?.id) {
+      initGoogle();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = initGoogle;
+    document.body.appendChild(script);
+
+    return () => {
+      script.onload = null;
+    };
+  }, [googleClientId]);
 
   // ===== CLEAR FIELDS ON FOCUS =====
   const handleFieldFocus = (fieldName) => {
@@ -79,6 +136,20 @@ export default function Login() {
           title="Welcome Back" 
           subtitle="Sign in to continue"
         />
+
+        {/* Google One Tap / button */}
+        <div className="oauth-block">
+          <div id="google-signin-button" style={{ width: '100%' }} />
+          {!googleClientId && (
+            <p className="oauth-hint">Add VITE_GOOGLE_CLIENT_ID to enable Google sign-in.</p>
+          )}
+        </div>
+
+        <div className="oauth-divider">
+          <span className="oauth-line" />
+          <span className="oauth-text">or continue with email</span>
+          <span className="oauth-line" />
+        </div>
 
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="auth-form">

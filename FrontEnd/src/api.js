@@ -44,13 +44,23 @@ export async function login({ email, password }) {
   return data; // { access_token, token_type }
 }
 
+export async function googleLogin(idToken) {
+  return request('/api/auth/google', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ id_token: idToken }),
+  });
+}
+
 export async function getCurrentUser() {
   return request('/api/auth/me', {
     method: 'GET',
   });
 }
 
-export async function register({ fullName, email, dueDate, userType, password }) {
+export async function register({ fullName, email, dueDate, userType, password, babyDob }) {
   // Send dates as YYYY-MM-DD strings (no timezone conversion needed)
   return request('/api/auth/register', {
     method: 'POST',
@@ -60,7 +70,9 @@ export async function register({ fullName, email, dueDate, userType, password })
     body: JSON.stringify({
       email,
       password,
-      full_name: fullName,      due_date: dueDate || null,      due_date: dueDate || null,
+      full_name: fullName,
+      due_date: dueDate || null,
+      baby_date_of_birth: babyDob || null,
       user_type: userType,
     }),
   });

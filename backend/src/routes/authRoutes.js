@@ -1,5 +1,5 @@
 import express from 'express';
-import { register, login, getCurrentUser } from '../controllers/authController.js';
+import { register, login, getCurrentUser, googleLogin } from '../controllers/authController.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -17,6 +17,13 @@ router.post('/register', register);
  * Body: { email, password }
  */
 router.post('/login', login);
+
+/**
+ * POST /auth/google
+ * Login via Google ID token
+ * Body: { id_token }
+ */
+router.post('/google', googleLogin);
 
 /**
  * GET /auth/me

@@ -5,13 +5,19 @@ import {
   validatePasswordStrength,
   createAccessToken,
 } from '../utils/auth.js';
+import { OAuth2Client } from 'google-auth-library';
+import { config } from '../config/index.js';
+
+const googleClient = config.oauth.googleClientId
+  ? new OAuth2Client(config.oauth.googleClientId)
+  : null;
 
 /**
  * Register a new user
  */
 export const register = async (req, res, next) => {
   try {
-    const { email, password, full_name, due_date, user_type } = req.body;
+    const { email, password, full_name, due_date, baby_date_of_birth, user_type } = req.body;
 
     // Validate password strength
     const passwordValidation = validatePasswordStrength(password);
@@ -35,6 +41,7 @@ export const register = async (req, res, next) => {
       hashed_password: hashedPassword,
       full_name,
       due_date,
+      baby_date_of_birth,
       user_type,
     });
 
@@ -78,6 +85,72 @@ export const login = async (req, res, next) => {
     return res.status(500).json({
       detail: 'An error occurred during login. Please try again.',
     });
+  }
+};
+
+/**
+ * Google OAuth login with ID token
+ */
+export const googleLogin = async (req, res, next) => {
+  try {
+    const { id_token: idToken } = req.body;
+
+    if (!googleClient) {
+      return res.status(500).json({ detail: 'Google login not configured' });
+    }
+
+    if (!idToken) {
+      return res.status(400).json({ detail: 'Missing Google ID token' });
+    }
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken,
+      audience: config.oauth.googleClientId,
+    });
+
+    const payload = ticket.getPayload();
+    const email = payload?.email;
+    const googleId = payload?.sub;
+    const name = payload?.name || '';
+    const picture = payload?.picture || null;
+    const emailVerified = payload?.email_verified;
+
+    if (!email || !googleId || emailVerified === false) {
+      return res.status(401).json({ detail: 'Unable to verify Google account' });
+    }
+
+    // Find or create user
+    const existingUser = await User.findOne({ where: { email } });
+
+    let user;
+    if (existingUser) {
+      user = existingUser;
+      // Update provider metadata if needed
+      if (user.provider !== 'google' || user.provider_id !== googleId || user.picture_url !== picture) {
+        user.provider = 'google';
+        user.provider_id = googleId;
+        user.picture_url = picture;
+        await user.save();
+      }
+    } else {
+      user = await User.create({
+        email,
+        full_name: name,
+        provider: 'google',
+        provider_id: googleId,
+        picture_url: picture,
+        hashed_password: null,
+      });
+    }
+
+    const token = createAccessToken(user.id);
+    return res.json({
+      access_token: token,
+      token_type: 'bearer',
+    });
+  } catch (error) {
+    console.error(`Google login error: ${error.message}`);
+    return res.status(401).json({ detail: 'Google login failed' });
   }
 };
 

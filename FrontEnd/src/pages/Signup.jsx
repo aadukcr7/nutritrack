@@ -27,7 +27,7 @@ import AuthFooter from '../components/AuthFooter';
 import UserTypeSelector from '../components/UserTypeSelector';
 import SubmitButton from '../components/SubmitButton';
 import PasswordStrengthIndicator from '../components/PasswordStrengthIndicator';
-import { register } from '../api';
+import { register, googleLogin, setAuthToken } from '../api';
 import '../styles/Auth.css';
 
 export default function Signup() {
@@ -37,10 +37,67 @@ export default function Signup() {
     email: '',
     password: '',
     userType: 'pregnant',
-    dueDate: ''
+    dueDate: '',
+    babyDob: ''
   });
   const navigate = useNavigate();
   const location = useLocation();
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+  const handleGoogleCredentialResponse = async (response) => {
+    const idToken = response?.credential;
+    if (!idToken) {
+      setError('Google sign-in failed');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await googleLogin(idToken);
+      setAuthToken(result.access_token);
+      navigate('/home');
+    } catch (err) {
+      setError(err.message || 'Google sign-in failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!googleClientId) return;
+
+    const initGoogle = () => {
+      if (!window.google?.accounts?.id) return;
+      window.google.accounts.id.initialize({
+        client_id: googleClientId,
+        callback: handleGoogleCredentialResponse,
+      });
+      const buttonTarget = document.getElementById('google-signup-button');
+      if (buttonTarget) {
+        window.google.accounts.id.renderButton(buttonTarget, {
+          theme: 'outline',
+          size: 'large',
+          width: '100%',
+        });
+      }
+    };
+
+    if (window.google?.accounts?.id) {
+      initGoogle();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = initGoogle;
+    document.body.appendChild(script);
+
+    return () => {
+      script.onload = null;
+    };
+  }, [googleClientId]);
 
   // Prefill user type based on stage selection from welcome screen
   useEffect(() => {
@@ -94,7 +151,11 @@ export default function Signup() {
       return;
     }
 
-    // Note: Dates (due date or baby DOB) will be collected after signup when creating baby profile
+    if (formData.userType === 'newParent' && !formData.babyDob) {
+      setError('Please enter your baby\'s date of birth');
+      setIsLoading(false);
+      return;
+    }
 
     // Strict email validation - only letters, numbers, dots, and underscores allowed
     // Must start with letter, at least 3 chars before @
@@ -123,7 +184,8 @@ export default function Signup() {
         email: formData.email,
         password: formData.password,
         userType: formData.userType,
-        dueDate: formData.userType === 'pregnant' ? formData.dueDate : ''
+        dueDate: formData.userType === 'pregnant' ? formData.dueDate : '',
+        babyDob: formData.userType === 'newParent' ? formData.babyDob : ''
       });
 
       navigate('/login', { state: { message: 'Account created! Please sign in.' } });
@@ -144,6 +206,19 @@ export default function Signup() {
           title="Create Account" 
           subtitle="Let's get to know you better"
         />
+
+        <div className="oauth-block">
+          <div id="google-signup-button" style={{ width: '100%' }} />
+          {!googleClientId && (
+            <p className="oauth-hint">Add VITE_GOOGLE_CLIENT_ID to enable Google sign-in.</p>
+          )}
+        </div>
+
+        <div className="oauth-divider">
+          <span className="oauth-line" />
+          <span className="oauth-text">or continue with email</span>
+          <span className="oauth-line" />
+        </div>
 
         {/* Signup Form */}
         <form onSubmit={handleSubmit} className="auth-form">
@@ -199,6 +274,18 @@ export default function Signup() {
               value={formData.dueDate}
               onChange={handleInputChange}
               minDate={new Date()}
+            />
+          )}
+
+          {/* Baby DOB Input - Only for new parents */}
+          {formData.userType === 'newParent' && (
+            <DateInput
+              label="Baby's Date of Birth"
+              id="babyDob"
+              name="babyDob"
+              value={formData.babyDob}
+              onChange={handleInputChange}
+              maxDate={new Date()}
             />
           )}
 
